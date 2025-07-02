@@ -1,5 +1,5 @@
 flask
-pinecone-client
+pinecone
 openai
 python-dotenv
 gunicorn
