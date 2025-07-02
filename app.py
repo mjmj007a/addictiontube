@@ -1,22 +1,28 @@
 from flask import Flask, request, jsonify
 from pinecone import Pinecone
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+# Load .env file
 load_dotenv()
 
 app = Flask(__name__)
 
-# Initialize Pinecone and OpenAI with environment variables
+# Initialize Pinecone and OpenAI clients
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 index = pc.Index("addictiontube-index")
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Generate embedding using OpenAI v1.x client
 def get_embedding(text):
     try:
-        response = openai.Embedding.create(input=text, model="text-embedding-ada-002")
-        return response['data'][0]['embedding']
+        response = client.embeddings.create(
+            input=[text],
+            model="text-embedding-ada-002"
+        )
+        return response.data[0].embedding
     except Exception as e:
         print("Error generating embedding:", e)
         return None
@@ -43,7 +49,8 @@ def search_stories():
                 "score": match['score'],
                 "title": match['metadata'].get('title', 'N/A'),
                 "description": match['metadata'].get('description', '')
-            } for match in results['matches']
+            }
+            for match in results['matches']
         ]
         return jsonify(stories)
     except Exception as e:
