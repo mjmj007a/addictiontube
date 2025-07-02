@@ -2,3 +2,4 @@ flask
 pinecone-client
 openai
 python-dotenv
+gunicorn
